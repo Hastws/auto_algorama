@@ -8,14 +8,12 @@
 #include "common/types.h"
 
 namespace autoalg {
-    inline Real BinaryActivation(const Real &z) {
-        return z >= 0.0f ? 1.0f : 0.0f;
-    }
+inline Real BinaryActivation(const Real &z) { return z >= 0.0f ? 1.0f : 0.0f; }
 
-    inline Real SignActivation(const Real &z) {
-        if (z > 0.0f) return 1.0f;
-        if (z < 0.0f) return -1.0f;
-        return 0.0f;
-    }
+inline Real SignActivation(const Real &z) {
+  if (z > 0.0f) return 1.0f;
+  if (z < 0.0f) return -1.0f;
+  return 0.0f;
 }
-#endif // INCLUDE_FUNCTIONS_AUTOALG_DISCRETE_ACTIVATION_H
+}  // namespace autoalg
+#endif  // INCLUDE_FUNCTIONS_AUTOALG_DISCRETE_ACTIVATION_H
