@@ -14,10 +14,27 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install build tools
+      - name: Install build tools and deps (imgui + eigen)
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential cmake
+          # Base toolchain
+          sudo apt-get install -y build-essential cmake pkg-config
+          # Eigen (header-only)
+          sudo apt-get install -y libeigen3-dev
+          # ImGui common backends (OpenGL + GLFW/SDL2 + X11 + Freetype + GLEW)
+          sudo apt-get install -y \
+            libgl1-mesa-dev \
+            libglu1-mesa-dev \
+            mesa-common-dev \
+            libglfw3-dev \
+            libsdl2-dev \
+            libglew-dev \
+            libfreetype6-dev \
+            libx11-dev \
+            libxrandr-dev \
+            libxi-dev \
+            libxinerama-dev \
+            libxcursor-dev
 
       - name: Configure (CMake)
         run: |
