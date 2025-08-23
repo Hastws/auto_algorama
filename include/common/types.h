@@ -17,7 +17,7 @@
 #include <vector>
 
 namespace autoalg {
-    using Real = double;
+using Real = double;
 }
 
-#endif // INCLUDE_AUTOALG_TYPES_H
+#endif  // INCLUDE_AUTOALG_TYPES_H
