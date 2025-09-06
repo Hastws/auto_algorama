@@ -174,7 +174,9 @@ int MainWindow::Process() const {
       const char *name =
           FunctionsManager::Instance().GetFunctionName(i).c_str();
       if (strstr(name, search_buf)) {
-        if (ImGui::Selectable(name, func_type == i)) {
+        // 使用 ## 后缀创建唯一标识符，但保持显示文本不变
+        std::string unique_id = std::string(name) + "##" + std::to_string(i);
+        if (ImGui::Selectable(unique_id.c_str(), func_type == i)) {
           func_type = i;
         }
       }
