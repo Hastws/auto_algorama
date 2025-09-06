@@ -8,7 +8,7 @@
 #include <string>
 #include <thread>
 
-namespace autoalg {
+namespace Autoalg {
 class LogStream {
  public:
   LogStream(std::ostream &out, const std::string &level,
@@ -50,12 +50,12 @@ class LogStream {
   std::ostream &ostream_;
   std::stringstream stringstream_;
 };
-}  // namespace autoalg
+}  // namespace Autoalg
 
-#define DEBUG(module) autoalg::LogStream(std::cout, "DEBUG", #module)
-#define INFO(module) autoalg::LogStream(std::cout, "INFO ", #module)
-#define WARN(module) autoalg::LogStream(std::cerr, "WARN ", #module)
-#define ERROR(module) autoalg::LogStream(std::cerr, "ERROR", #module)
-#define FATAL(module) autoalg::LogStream(std::cerr, "FATAL", #module)
+#define DEBUG(module) Autoalg::LogStream(std::cout, "DEBUG", #module)
+#define INFO(module) Autoalg::LogStream(std::cout, "INFO ", #module)
+#define WARN(module) Autoalg::LogStream(std::cerr, "WARN ", #module)
+#define ERROR(module) Autoalg::LogStream(std::cerr, "ERROR", #module)
+#define FATAL(module) Autoalg::LogStream(std::cerr, "FATAL", #module)
 
 #endif  // INCLUDE_AUTOALG_LOG_H

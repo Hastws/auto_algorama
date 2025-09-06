@@ -3,7 +3,7 @@
 #include "common/log.h"
 #include "functions/functions.h"
 
-namespace autoalg {
+namespace Autoalg {
 static float amplitude = 1.0f;
 static float frequency = 1.0f;
 static int func_type = 0;
@@ -16,13 +16,13 @@ static float y_max = 10.0f;
 static int x_ticks = 20;
 static int y_ticks = 20;
 
-REGISTER_FUNCTION(Sigmoid, ::autoalg::Sigmoid);
-REGISTER_FUNCTION(Probit, ::autoalg::Probit);
-REGISTER_FUNCTION(Tanh, ::autoalg::Tanh);
-REGISTER_FUNCTION(VariantSigmoid, ::autoalg::VariantSigmoid);
-REGISTER_FUNCTION(ShiftedScaled, ::autoalg::ShiftedScaledSigmoid);
-REGISTER_FUNCTION(ScaledTanh, ::autoalg::ScaledTanh);
-REGISTER_FUNCTION(BimodalSigmoid, ::autoalg::BimodalSigmoid);
+REGISTER_FUNCTION(Sigmoid, ::Autoalg::Sigmoid);
+REGISTER_FUNCTION(Probit, ::Autoalg::Probit);
+REGISTER_FUNCTION(Tanh, ::Autoalg::Tanh);
+REGISTER_FUNCTION(VariantSigmoid, ::Autoalg::VariantSigmoid);
+REGISTER_FUNCTION(ShiftedScaled, ::Autoalg::ShiftedScaledSigmoid);
+REGISTER_FUNCTION(ScaledTanh, ::Autoalg::ScaledTanh);
+REGISTER_FUNCTION(BimodalSigmoid, ::Autoalg::BimodalSigmoid);
 
 double EvaluateFunction(int func, float x, float amp, float freq) {
   auto name = FunctionsManager::Instance().GetFunctionName(func);
@@ -235,4 +235,4 @@ MainWindow::~MainWindow() {
   SDL_DestroyWindow(window_);
   SDL_Quit();
 }
-}  // namespace autoalg
+}  // namespace Autoalg
