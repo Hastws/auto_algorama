@@ -8,7 +8,7 @@
 #include "backends/imgui_impl_sdl2.h"
 #include "imgui.h"
 
-namespace autoalg {
+namespace Autoalg {
 class MainWindow {
  public:
   MainWindow(int width, int height);
@@ -24,6 +24,6 @@ class MainWindow {
   SDL_Window *window_;
   SDL_GLContext gl_context_;
 };
-}  // namespace autoalg
+}  // namespace Autoalg
 
 #endif  // INCLUDE_AUTOALG_MAIN_WINDOW_H

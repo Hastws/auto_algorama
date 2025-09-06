@@ -7,7 +7,7 @@
 
 #include "common/types.h"
 
-namespace autoalg {
+namespace Autoalg {
 inline Real BinaryActivation(const Real &z) { return z >= 0.0f ? 1.0f : 0.0f; }
 
 inline Real SignActivation(const Real &z) {
@@ -15,5 +15,5 @@ inline Real SignActivation(const Real &z) {
   if (z < 0.0f) return -1.0f;
   return 0.0f;
 }
-}  // namespace autoalg
+}  // namespace Autoalg
 #endif  // INCLUDE_FUNCTIONS_AUTOALG_DISCRETE_ACTIVATION_H

@@ -16,7 +16,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace autoalg {
+namespace Autoalg {
 using Real = double;
 }
 

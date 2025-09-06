@@ -2,7 +2,7 @@
 #define INCLUDE_AUTOALG_SIGMOD_H
 #include "common/types.h"
 
-namespace autoalg {
+namespace Autoalg {
 inline Real Sigmoid(const Real &v) { return 1.0 / (1.0 + std::exp(-v)); }
 
 inline Real Probit(const Real &z) {
@@ -42,6 +42,6 @@ inline Real BimodalSigmoid(const Real &z) {
   const Real b = 2.0;
   return 0.5 * (1.0 / (1.0 + std::exp(-z)) + 1.0 / (1.0 + std::exp(-z - b)));
 }
-}  // namespace autoalg
+}  // namespace Autoalg
 
 #endif  // INCLUDE_AUTOALG_SIGMOD_H

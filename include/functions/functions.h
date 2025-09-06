@@ -5,7 +5,7 @@
 #include "sigmoid.h"
 #include "softmax.h"
 
-namespace autoalg {
+namespace Autoalg {
 using Function = std::function<Real(Real)>;
 
 inline std::string ToLower(const std::string &s) {
@@ -83,11 +83,11 @@ class FunctionsManager {
   std::vector<std::string> id_to_name_;              // id → name
   FunctionsManager() = default;
 };
-}  // namespace autoalg
+}  // namespace Autoalg
 
 #define REGISTER_FUNCTION(name, func)                                      \
   static bool Registered_##name = []() {                                   \
-    ::autoalg::FunctionsManager::Instance().RegisterFunction(#name, func); \
+    ::Autoalg::FunctionsManager::Instance().RegisterFunction(#name, func); \
     return true;                                                           \
   }()
 
