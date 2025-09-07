@@ -2,13 +2,13 @@
 
 #include "common/log.h"
 #include "functions/functions.h"
+#include "imgui_internal.h"
 
 namespace Autoalg {
 static float amplitude = 1.0f;
 static float frequency = 1.0f;
 static int func_type = 0;
 
-// 坐标轴范围和刻度
 static float x_min = -10.0f;
 static float x_max = 10.0f;
 static float y_min = -10.0f;
@@ -92,9 +92,8 @@ int MainWindow::Process() const {
     float x_range = x_max - x_min;
     float y_range = y_max - y_min;
 
-    // 背景填充
     bg->AddRectFilled(p0, p1, IM_COL32(20, 20, 20, 255));
-    // 网格线
+
     for (int i = 0; i <= x_ticks; ++i) {
       float t = (float)i / x_ticks;
       float px = p0.x + t * dispSize.x;
@@ -143,20 +142,105 @@ int MainWindow::Process() const {
       snprintf(buf, 32, "%d", int_y);
       bg->AddText(ImVec2(x0 + 6, py - 6), IM_COL32(255, 255, 255, 200), buf);
     }
+
     // 函数曲线（中心原点映射）
     int samples = std::max(100, x_ticks * 40);
     ImVec2 prev;
     bool firstPt = true;
+    std::vector<ImVec2> curvePoints;  // 存储曲线上的点
+    std::vector<float> curveXValues;  // 存储对应的x值
+
     for (int i = 0; i <= samples; ++i) {
       float t = (float)i / samples;
       float x = x_min + t * x_range;
       float y = EvaluateFunction(func_type, x, amplitude, frequency);
       float px = x0 + (x - data_x_mid) / x_range * dispSize.x;
       float py = y0 - (y - data_y_mid) / y_range * dispSize.y;
+
+      // 存储点和对应的x值
+      curvePoints.emplace_back(px, py);
+      curveXValues.push_back(x);
+
       if (!firstPt)
         bg->AddLine(prev, ImVec2(px, py), IM_COL32(255, 120, 120, 200), 2.0f);
       prev = ImVec2(px, py);
       firstPt = false;
+    }
+
+    // 获取鼠标位置（屏幕坐标）
+    ImVec2 mouse_pos = ImGui::GetIO().MousePos;
+
+    // 判断鼠标是否在绘图区域内
+    bool mouse_in_rect = (mouse_pos.x >= p0.x && mouse_pos.x <= p1.x &&
+                          mouse_pos.y >= p0.y && mouse_pos.y <= p1.y);
+    bool control_hovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow);
+
+    // 鼠标悬停检测 - 检查是否靠近曲线
+    bool hoveredOnCurve = false;
+    float hoverX = 0.0f;
+    float hoverY = 0.0f;
+
+    if (mouse_in_rect && !control_hovered && !curvePoints.empty()) {
+      const float hoverRadius = 8.0f;  // 悬停检测半径
+      float minDistance = FLT_MAX;
+      int closestIndex = -1;
+
+      // 找到距离鼠标最近的点（每3个点检测一次提高性能）
+      for (size_t i = 0; i < curvePoints.size(); i += 3) {
+        float distance = ImLengthSqr(ImVec2(mouse_pos.x - curvePoints[i].x,
+                                            mouse_pos.y - curvePoints[i].y));
+        if (distance < minDistance) {
+          minDistance = distance;
+          closestIndex = i;
+        }
+      }
+
+      if (closestIndex != -1 && minDistance < hoverRadius * hoverRadius) {
+        hoveredOnCurve = true;
+        hoverX = curveXValues[closestIndex];
+        hoverY = EvaluateFunction(func_type, hoverX, amplitude, frequency);
+      }
+    }
+
+    if (mouse_in_rect && !control_hovered) {
+      // 计算鼠标对应的坐标系中的 x, y 值
+      float mouse_x_data = x_min + (mouse_pos.x - p0.x) / dispSize.x * x_range;
+      float mouse_y_data = y_max - (mouse_pos.y - p0.y) / dispSize.y * y_range;
+
+      // 绘制横向参考线（贯穿绘图区）
+      bg->AddLine(ImVec2(p0.x, mouse_pos.y), ImVec2(p1.x, mouse_pos.y),
+                  IM_COL32(200, 200, 100, 150), 1.5f);
+      // 绘制纵向参考线（贯穿绘图区）
+      bg->AddLine(ImVec2(mouse_pos.x, p0.y), ImVec2(mouse_pos.x, p1.y),
+                  IM_COL32(200, 200, 100, 150), 1.5f);
+
+      // 显示坐标文本
+      char buf[64];
+      if (hoveredOnCurve) {
+        // 显示曲线上的精确坐标
+        snprintf(buf, 64, "x=%.3f, y=%.3f", hoverX, hoverY);
+
+        // 在曲线点处绘制一个标记
+        for (size_t i = 0; i < curvePoints.size(); ++i) {
+          if (std::abs(curveXValues[i] - hoverX) < 0.001f) {
+            bg->AddCircleFilled(curvePoints[i], 4.0f,
+                                IM_COL32(255, 255, 0, 255));
+            break;
+          }
+        }
+      } else {
+        // 显示鼠标位置的坐标
+        snprintf(buf, 64, "x=%.2f, y=%.2f", mouse_x_data, mouse_y_data);
+      }
+
+      // 文字位置，鼠标右上方，避免遮挡指针
+      ImVec2 text_pos = ImVec2(mouse_pos.x + 10, mouse_pos.y - 20);
+      bg->AddText(text_pos, IM_COL32(255, 255, 100, 255), buf);
+
+      // 如果悬停在曲线上，改变光标样式
+      if (hoveredOnCurve) {
+        ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
+      }
     }
 
     // 前台 UI 窗口：函数控件
@@ -174,7 +258,7 @@ int MainWindow::Process() const {
       const char *name =
           FunctionsManager::Instance().GetFunctionName(i).c_str();
       if (strstr(name, search_buf)) {
-        // 使用 ## 后缀创建唯一标识符，但保持显示文本不变
+        // 使用 ## 后缀创建唯一标识符
         std::string unique_id = std::string(name) + "##" + std::to_string(i);
         if (ImGui::Selectable(unique_id.c_str(), func_type == i)) {
           func_type = i;
@@ -186,34 +270,6 @@ int MainWindow::Process() const {
     ImGui::SliderFloat("Amplitude", &amplitude, 0.1f, 5.0f);
     ImGui::SliderFloat("Frequency", &frequency, 0.1f, 10.0f);
     ImGui::End();
-
-    // 获取鼠标位置（屏幕坐标）
-    ImVec2 mouse_pos = ImGui::GetIO().MousePos;
-
-    // 判断鼠标是否在绘图区域内
-    bool mouse_in_rect = (mouse_pos.x >= p0.x && mouse_pos.x <= p1.x &&
-                          mouse_pos.y >= p0.y && mouse_pos.y <= p1.y);
-    bool control_hovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow);
-    if (mouse_in_rect && !control_hovered) {
-      // 计算鼠标对应的坐标系中的 x, y 值
-      float mouse_x_data = x_min + (mouse_pos.x - p0.x) / dispSize.x * x_range;
-      float mouse_y_data = y_max - (mouse_pos.y - p0.y) / dispSize.y * y_range;
-
-      // 绘制横向参考线（贯穿绘图区）
-      bg->AddLine(ImVec2(p0.x, mouse_pos.y), ImVec2(p1.x, mouse_pos.y),
-                  IM_COL32(200, 200, 100, 150), 1.5f);
-      // 绘制纵向参考线（贯穿绘图区）
-      bg->AddLine(ImVec2(mouse_pos.x, p0.y), ImVec2(mouse_pos.x, p1.y),
-                  IM_COL32(200, 200, 100, 150), 1.5f);
-
-      // 显示坐标文本
-      char buf[64];
-      snprintf(buf, 64, "x=%.2f, y=%.2f", mouse_x_data, mouse_y_data);
-
-      // 文字位置，鼠标右上方，避免遮挡指针
-      ImVec2 text_pos = ImVec2(mouse_pos.x + 10, mouse_pos.y - 20);
-      bg->AddText(text_pos, IM_COL32(255, 255, 100, 255), buf);
-    }
 
     // 渲染
     ImGui::Render();
