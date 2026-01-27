@@ -1,44 +1,85 @@
-# AutoAlgorama — 激活函数可视化工具
+# AutoAlgorama — Neural Network Activation Functions Visualizer
 
-> 一个交互式的小工具，用来**实时查看与比较各类激活/数学函数**的曲线与数值，便于在调参或教学时快速直觉化地理解函数行为。
+> An interactive visualization tool for **real-time exploration and comparison of 80+ activation functions** used in neural networks. Based on the comprehensive survey paper: *"Three Decades of Activations: A Comprehensive Survey of 400 Activation Functions for Neural Networks"*.
 
-![截图](docs/screenshot.png)
-
----
-
-## ✨ 功能特性
-
-- **实时绘图**：拖动参数滑块，曲线即时更新
-- **精确读数**：十字准线+悬浮提示，显示当前 `(x, y)`
-- **参数面板**：支持搜索函数、设置“Amplitude/幅值”“Frequency/频率”等自定义参数
-- **易扩展**：以最少改动新增一个函数并立即可视化
-
-> 截图仅供示例，具体控件/命名以代码为准。
+![Screenshot](docs/screenshot.jpg)
 
 ---
 
-## 🧰 依赖与环境
+## ✨ Features
 
-- **操作系统**：Windows / macOS / Linux
-- **编译工具**：CMake ≥ 3.10，C++11 或以上编译器
-- **第三方库**（常见组合）：
-  - [Dear ImGui](https://github.com/ocornut/imgui)（UI）
-  - [GLFW](https://www.glfw.org/)（窗口/输入）
-  - OpenGL（图形上下文）
-  - Eigen（如需要做矩阵/数值运算）
+### Visualization
+- **Real-time Plotting**: Curves update instantly as you adjust parameters
+- **Precise Readout**: Crosshair + floating tooltip showing `x`, `f(x)`, and `f'(x)` (derivative)
+- **Derivative Visualization**: Toggle to display the derivative curve alongside the function
+- **Multi-function Comparison**: Compare multiple activation functions simultaneously with color-coded legend
+
+### Interaction
+- **Mouse Wheel Zoom**: Zoom in/out centered on cursor position
+- **Right-click Drag**: Pan the view
+- **Hover Detection**: Highlight points on curves with exact coordinate display
+
+### Control Panel
+- **Category Filter**: Filter functions by category (Sigmoid, ReLU, Tanh, etc.)
+- **Search**: Quickly find functions by name
+- **Parameter Adjustment**: Modify amplitude and frequency in real-time
+- **Display Options**: Toggle grid, axis labels, derivative, sample points
+- **Function Info**: View formula and key values for selected function
+
+### Extensibility
+- **Easy to Add New Functions**: Register new activation functions with minimal code changes
+- **Category System**: Organize functions into logical groups
 
 ---
 
-## 🚀 快速开始
+## 📊 Supported Activation Functions (80+)
+
+| Category | Functions |
+|----------|-----------|
+| **Sigmoid Family** | Sigmoid, HardSigmoid, Swish, HardSwish, ESwish, LogSigmoid, dSiLU, ParametricSwish |
+| **Tanh Family** | Tanh, HardTanh, LeCunTanh, ScaledTanh, PenalizedTanh, TanhShrink, LiSHT |
+| **ReLU Family** | ReLU, LeakyReLU, PReLU, ELU, SELU, CELU, GELU, GELUTanh, SoftPlus, Mish, ReLU6, ThresholdedReLU, SReLU, ISRU, ISRLU, SERLU, RReLU, SoLU |
+| **Exponential** | ELiSH, HardELiSH, SoftExponential, LogSigmoid, Log1p, Hexpo |
+| **Gaussian/Radial** | Gaussian, GaussianELU, GCU, Sine, Cosine, Sinc, Sech, DoubleGaussian |
+| **Adaptive** | Softsign, BentIdentity, ArcTan, ArcSinh, Elliott, SQNL, APL |
+| **Piecewise** | Identity, BinaryStep, Sign, AbsoluteValue, Maxout, SymmetricSaturating |
+| **Smooth** | SmoothReLU, SmoothAbs, SoftShrink, HardShrink, SquarePlus, Smelu |
+| **Special** | Probit, CLogLog, LogLog, BimodalSigmoid, BipolarSigmoid, Gompertz, SoftClipping |
+| **Modern** | SiLU, Phish, NCU, DSU, Smish, Logish, TanhExp, Snake, PAU, FReLU, StarReLU, Serf, ACONC, MetaACON, Maxsig |
+| **Attention/Transformer** | QuickGELU, GEGLU, ReGLU, SwiGLU, Laplace |
+| **Polynomial** | Square, Cube, Quartic |
+| **Probabilistic** | LogisticCDF, NormalCDF, CauchyCDF, GumbelCDF, WeibullLike |
+
+---
+
+## 🧰 Dependencies
+
+- **Operating System**: Windows / macOS / Linux
+- **Build Tools**: CMake ≥ 3.10, C++17 compatible compiler
+- **Third-party Libraries**:
+  - [Dear ImGui](https://github.com/ocornut/imgui) (UI framework, included in `external/`)
+  - [SDL2](https://www.libsdl.org/) (Window/Input handling)
+  - OpenGL (Graphics rendering)
+  - [Eigen](https://eigen.tuxfamily.org/) (Matrix/numerical operations)
+
+---
+
+## 🚀 Quick Start
+
+### Build
 
 ```bash
-mkdir -p build
-cd build
+# Clone the repository
+git clone https://github.com/user/auto_algorama.git
+cd auto_algorama
+
+# Build
+mkdir -p build && cd build
 cmake ..
-cmake --build . -j
+make -j$(nproc)
 ```
 
-运行可执行文件（名称以项目实际生成为准）：
+### Run
 
 ```bash
 ./AutoAlgorama
@@ -46,51 +87,89 @@ cmake --build . -j
 
 ---
 
-## 🕹️ 使用指南
+## 🕹️ Usage Guide
 
-- 左上角 **Function Controls** 面板
-  - **Search Function**：输入关键字筛选函数
-  - **Amplitude / Frequency**：调整曲线幅值、频率（如函数支持）
-- 画布交互
-  - **滚轮**：缩放
-  - **按住右键拖拽**：平移
-  - **双击**：复位视图（如项目中有实现）
-- 读数
-  - 移动鼠标到曲线上，底部/浮窗显示当前 `x` 与 `y`
+### Control Panel
+- **View Controls**: Reset view, zoom in/out, adjust X/Y range, tick count, sample count, line width
+- **Display Options**: Toggle grid, axis labels, derivative curve, sample points, comparison mode
+- **Function Parameters**: Adjust amplitude and frequency
+- **Function Selection**: Filter by category, search, and select functions
+- **Current Function Info**: View name, formula, and key values
 
----
+### Canvas Interaction
+| Action | Operation |
+|--------|-----------|
+| **Zoom** | Mouse wheel |
+| **Pan** | Right-click + drag |
+| **View Coordinates** | Hover over canvas |
+| **View Exact Values** | Hover over curve |
 
-## 📚 已内置（或常见可选）的函数
-
-> 实际内置以代码为准，这里列出常用激活函数，便于对照或扩展：
-
-- Sigmoid / Tanh / ReLU / Leaky ReLU / PReLU
----
-
-## 🧪 小贴士
-
-- **数值范围**：某些函数在极大/极小 x 时会发生数值饱和，可适当限制 `x` 轴范围或做归一化
-- **采样密度**：曲线锯齿通常与采样点数相关，增大采样可改善平滑度
+### Comparison Mode
+1. Check "Comparison Mode" in Display Options
+2. Click multiple functions to add them to comparison
+3. Each function displays in a different color with legend
 
 ---
 
-## 🛠️ 常见问题（FAQ）
+## 🧪 Tips
 
-**Q1：运行后是黑屏/空白窗口？**
-- 请确认系统支持 OpenGL，并更新显卡驱动
-- 终端查看是否有 `GLFW`/`OpenGL` 初始化失败的日志
-
-**Q2：构建失败，提示找不到 GLFW/ImGui？**
-- 确认子模块是否初始化；或在系统中安装相应的开发包，并在 CMake 中启用 `find_package(GLFW3)` 等
+- **Numerical Range**: Some functions saturate at extreme x values; adjust the X range accordingly
+- **Sampling Density**: Increase samples for smoother curves (higher values may impact performance)
+- **Derivative Display**: Enable "Show Derivative" to visualize the gradient of the function
 
 ---
 
-## 📄 许可
+## 🛠️ FAQ
 
-本工具随项目仓库的 License
+**Q1: Black/empty window on startup?**
+- Ensure your system supports OpenGL 3.0+
+- Update graphics drivers
+- Check terminal for GLFW/OpenGL initialization errors
+
+**Q2: Build fails with missing SDL2/Eigen?**
+- Install dependencies:
+  ```bash
+  # Ubuntu/Debian
+  sudo apt-get install libsdl2-dev libeigen3-dev libgl1-mesa-dev
+  
+  # macOS
+  brew install sdl2 eigen
+  ```
+
+**Q3: How to add a new activation function?**
+1. Add the function implementation in `include/functions/activation_functions.h`
+2. Register it in `src/windows/main_window.cpp` using `REGISTER_FUNCTION_WITH_CATEGORY`
 
 ---
 
-## 🔗 参考
+## 📁 Project Structure
 
-- [Dear ImGui](https://github.com/ocornut/imgui) · [GLFW](https://www.glfw.org/)
+```
+auto_algorama/
+├── include/
+│   ├── common/           # Common types and logging
+│   ├── functions/        # Activation function definitions
+│   │   ├── activation_functions.h  # 80+ activation functions
+│   │   └── functions.h             # Function manager
+│   └── windows/          # Window definitions
+├── src/
+│   └── windows/          # Main window implementation
+├── exec/                 # Entry point
+├── external/             # Third-party libraries (ImGui)
+└── docs/                 # Documentation and screenshots
+```
+
+---
+
+## 📄 License
+
+This project is licensed under the terms specified in the [LICENSE](LICENSE) file.
+
+---
+
+## 🔗 References
+
+- [Dear ImGui](https://github.com/ocornut/imgui)
+- [SDL2](https://www.libsdl.org/)
+- [Eigen](https://eigen.tuxfamily.org/)
+- *"Three Decades of Activations: A Comprehensive Survey of 400 Activation Functions for Neural Networks"*

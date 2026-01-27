@@ -7,26 +7,24 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
+  build-linux:
     runs-on: ubuntu-latest
-
+    
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install build tools and deps (imgui + eigen)
+      - name: Install dependencies
         run: |
           sudo apt-get update
-          # Base toolchain
-          sudo apt-get install -y build-essential cmake pkg-config
-          # Eigen (header-only)
-          sudo apt-get install -y libeigen3-dev
-          # ImGui common backends (OpenGL + GLFW/SDL2 + X11 + Freetype + GLEW)
           sudo apt-get install -y \
+            build-essential \
+            cmake \
+            pkg-config \
+            libeigen3-dev \
             libgl1-mesa-dev \
             libglu1-mesa-dev \
             mesa-common-dev \
-            libglfw3-dev \
             libsdl2-dev \
             libglew-dev \
             libfreetype6-dev \
@@ -36,13 +34,37 @@ jobs:
             libxinerama-dev \
             libxcursor-dev
 
-      - name: Configure (CMake)
-        run: |
-          mkdir -p build
-          cd build
-          cmake ..
+      - name: Configure CMake
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
 
-      - name: Build (make -j)
+      - name: Build
+        run: cmake --build build --parallel $(nproc)
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AutoAlgorama-linux
+          path: build/AutoAlgorama
+
+  build-macos:
+    runs-on: macos-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
         run: |
-          cd build
-          make -j"$(nproc)"
+          brew install cmake eigen sdl2
+
+      - name: Configure CMake
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build --parallel $(sysctl -n hw.ncpu)
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AutoAlgorama-macos
+          path: build/AutoAlgorama
