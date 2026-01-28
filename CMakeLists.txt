@@ -4,15 +4,14 @@ project(AutoAlgorama)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-#Eigen
-find_package(Eigen3 REQUIRED)
-include_directories(${EIGEN3_INCLUDE_DIRS})
+# Find Eigen (header-only library)
+find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 
-# 找SDL2库
+# Find SDL2
 find_package(SDL2 REQUIRED)
 find_package(OpenGL REQUIRED)
 
-# ImGui源文件
+# ImGui source files
 set(IMGUI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/imgui-1.91.9b)
 
 set(IMGUI_SOURCES
@@ -38,6 +37,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
+        Eigen3::Eigen
         ${SDL2_LIBRARIES}
         OpenGL::GL
         dl

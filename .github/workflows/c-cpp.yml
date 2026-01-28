@@ -58,7 +58,10 @@ jobs:
           brew install cmake eigen sdl2
 
       - name: Configure CMake
-        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+        run: |
+          EIGEN3_ROOT=$(brew --prefix eigen)
+          cmake -B build -DCMAKE_BUILD_TYPE=Release \
+            -DEIGEN3_INCLUDE_DIR="${EIGEN3_ROOT}/include"
 
       - name: Build
         run: cmake --build build --parallel $(sysctl -n hw.ncpu)
