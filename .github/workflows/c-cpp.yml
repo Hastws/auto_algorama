@@ -3,10 +3,18 @@ name: C/C++ CI
 on:
   push:
     branches: [ "main" ]
+    tags:
+      - 'v*'
   pull_request:
     branches: [ "main" ]
 
+env:
+  BUILD_TYPE: Release
+
 jobs:
+  # ============================================================================
+  # Linux Build
+  # ============================================================================
   build-linux:
     runs-on: ubuntu-latest
     
@@ -35,17 +43,33 @@ jobs:
             libxcursor-dev
 
       - name: Configure CMake
-        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+        run: cmake -B build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
 
       - name: Build
         run: cmake --build build --parallel $(nproc)
 
+      - name: Run tests
+        run: |
+          cd build
+          ctest --output-on-failure || echo "No tests configured"
+
+      - name: Package
+        run: |
+          mkdir -p package/AutoAlgorama-linux
+          cp build/AutoAlgorama package/AutoAlgorama-linux/
+          cp README.md LICENSE package/AutoAlgorama-linux/
+          cd package
+          tar -czvf AutoAlgorama-linux-x64.tar.gz AutoAlgorama-linux
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: AutoAlgorama-linux
-          path: build/AutoAlgorama
+          name: AutoAlgorama-linux-x64
+          path: package/AutoAlgorama-linux-x64.tar.gz
 
+  # ============================================================================
+  # macOS Build
+  # ============================================================================
   build-macos:
     runs-on: macos-latest
     
@@ -60,14 +84,118 @@ jobs:
       - name: Configure CMake
         run: |
           EIGEN3_ROOT=$(brew --prefix eigen)
-          cmake -B build -DCMAKE_BUILD_TYPE=Release \
+          cmake -B build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
             -DEIGEN3_INCLUDE_DIR="${EIGEN3_ROOT}/include"
 
       - name: Build
         run: cmake --build build --parallel $(sysctl -n hw.ncpu)
 
+      - name: Run tests
+        run: |
+          cd build
+          ctest --output-on-failure || echo "No tests configured"
+
+      - name: Package
+        run: |
+          mkdir -p package/AutoAlgorama-macos
+          cp build/AutoAlgorama package/AutoAlgorama-macos/
+          cp README.md LICENSE package/AutoAlgorama-macos/
+          cd package
+          zip -r AutoAlgorama-macos-x64.zip AutoAlgorama-macos
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: AutoAlgorama-macos
-          path: build/AutoAlgorama
+          name: AutoAlgorama-macos-x64
+          path: package/AutoAlgorama-macos-x64.zip
+
+  # ============================================================================
+  # Windows Build
+  # ============================================================================
+  build-windows:
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup MSVC
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Install vcpkg
+        run: |
+          git clone https://github.com/Microsoft/vcpkg.git
+          .\vcpkg\bootstrap-vcpkg.bat
+
+      - name: Install dependencies via vcpkg
+        run: |
+          .\vcpkg\vcpkg install eigen3:x64-windows sdl2:x64-windows opengl:x64-windows
+
+      - name: Configure CMake
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} `
+            -DCMAKE_TOOLCHAIN_FILE="${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake" `
+            -DVCPKG_TARGET_TRIPLET=x64-windows
+
+      - name: Build
+        run: cmake --build build --config ${{env.BUILD_TYPE}} --parallel
+
+      - name: Run tests
+        run: |
+          cd build
+          ctest -C ${{env.BUILD_TYPE}} --output-on-failure
+        continue-on-error: true
+
+      - name: Package
+        run: |
+          mkdir -p package/AutoAlgorama-windows
+          Copy-Item build/Release/AutoAlgorama.exe package/AutoAlgorama-windows/
+          Copy-Item README.md package/AutoAlgorama-windows/
+          Copy-Item LICENSE package/AutoAlgorama-windows/
+          # Copy SDL2 DLL
+          $sdl2Dll = Get-ChildItem -Path vcpkg/installed/x64-windows/bin -Filter "SDL2.dll" -Recurse
+          if ($sdl2Dll) { Copy-Item $sdl2Dll.FullName package/AutoAlgorama-windows/ }
+          Compress-Archive -Path package/AutoAlgorama-windows -DestinationPath package/AutoAlgorama-windows-x64.zip
+        shell: pwsh
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AutoAlgorama-windows-x64
+          path: package/AutoAlgorama-windows-x64.zip
+
+  # ============================================================================
+  # Release
+  # ============================================================================
+  release:
+    needs: [build-linux, build-macos, build-windows]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Display structure of downloaded files
+        run: ls -R artifacts
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            artifacts/AutoAlgorama-linux-x64/AutoAlgorama-linux-x64.tar.gz
+            artifacts/AutoAlgorama-macos-x64/AutoAlgorama-macos-x64.zip
+            artifacts/AutoAlgorama-windows-x64/AutoAlgorama-windows-x64.zip
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

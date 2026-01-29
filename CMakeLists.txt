@@ -1,8 +1,21 @@
 cmake_minimum_required(VERSION 3.10)
-project(AutoAlgorama)
+project(AutoAlgorama VERSION 1.0.0)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Enable testing
+enable_testing()
+
+# Platform-specific settings
+if(WIN32)
+    # Windows-specific settings
+    set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+elseif(APPLE)
+    # macOS-specific settings
+    set(CMAKE_MACOSX_RPATH ON)
+endif()
 
 # Find Eigen (header-only library)
 find_package(Eigen3 REQUIRED)
@@ -36,9 +49,33 @@ target_include_directories(${PROJECT_NAME} PRIVATE
         ${SDL2_INCLUDE_DIRS}
 )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE
+# Platform-specific linking
+if(WIN32)
+    target_link_libraries(${PROJECT_NAME} PRIVATE
+        Eigen3::Eigen
+        ${SDL2_LIBRARIES}
+        OpenGL::GL
+    )
+elseif(APPLE)
+    target_link_libraries(${PROJECT_NAME} PRIVATE
+        Eigen3::Eigen
+        ${SDL2_LIBRARIES}
+        OpenGL::GL
+        "-framework Cocoa"
+        "-framework IOKit"
+        "-framework CoreVideo"
+    )
+else()
+    # Linux
+    target_link_libraries(${PROJECT_NAME} PRIVATE
         Eigen3::Eigen
         ${SDL2_LIBRARIES}
         OpenGL::GL
         dl
-)
+    )
+endif()
+
+# Add basic test (if test files exist)
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests")
+    add_subdirectory(tests)
+endif()
